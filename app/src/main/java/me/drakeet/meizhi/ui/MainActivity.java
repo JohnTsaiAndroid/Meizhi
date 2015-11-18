@@ -216,8 +216,7 @@ public class MainActivity extends SwipeRefreshBaseActivity {
 
     private void startPictureActivity(Meizhi meizhi, View transitView) {
         Intent i = new Intent(MainActivity.this, PictureActivity.class);
-        i.putExtra(PictureActivity.EXTRA_IMAGE_URL, meizhi.url);
-        i.putExtra(PictureActivity.EXTRA_IMAGE_TITLE, meizhi.desc);
+        i.putExtra(PictureActivity.EXTRA_MEIZI,meizhi);
 
         ActivityOptionsCompat optionsCompat =
                 ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, transitView,

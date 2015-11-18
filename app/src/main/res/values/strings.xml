@@ -37,6 +37,7 @@
     <string name="developer_service">主要服务端开发</string>
     <string name="open_source_lis">用到的开源库（后续会补充协议）</string>
     <string name="introduce_and_help">介绍与帮助</string>
+    <string name="about_meizi">关于妹子</string>
 
     <string name="loading">加载中...</string>
     <string name="no_data_the_day">今天没有妹纸</string>

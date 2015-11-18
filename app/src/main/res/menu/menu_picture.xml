@@ -23,16 +23,24 @@
     tools:context="me.drakeet.meizhi.ui.PictureActivity">
 
     <item
-        android:id="@+id/action_share"
-        android:title="@string/action_share"
+        android:id="@+id/action_about_meizi"
         android:orderInCategory="100"
-        app:showAsAction="always"
-        android:icon="@mipmap/ic_share_white_24dp"/>
+        android:title="@string/about_meizi"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/action_share"
+        android:icon="@mipmap/ic_share_white_24dp"
+        android:orderInCategory="100"
+        android:title="@string/action_share"
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/action_save"
-        android:title="@string/action_share"
+        android:icon="@mipmap/ic_save_white_24dp"
         android:orderInCategory="99"
-        app:showAsAction="always"
-        android:icon="@mipmap/ic_save_white_24dp"/>
+        android:title="@string/action_share"
+        app:showAsAction="always" />
+
 </menu>

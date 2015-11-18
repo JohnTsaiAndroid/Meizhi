@@ -32,6 +32,7 @@ import com.squareup.picasso.Picasso;
 import com.umeng.analytics.MobclickAgent;
 import java.io.File;
 import me.drakeet.meizhi.R;
+import me.drakeet.meizhi.model.Meizhi;
 import me.drakeet.meizhi.ui.base.ToolbarActivity;
 import me.drakeet.meizhi.util.RxMeizhi;
 import me.drakeet.meizhi.util.ShareUtils;
@@ -42,8 +43,7 @@ import uk.co.senab.photoview.PhotoViewAttacher;
 
 public class PictureActivity extends ToolbarActivity {
 
-    public static final String EXTRA_IMAGE_URL = "image_url";
-    public static final String EXTRA_IMAGE_TITLE = "image_title";
+    public static final String EXTRA_MEIZI = "extra_meizi";
     public static final String TRANSIT_PIC = "picture";
 
     @Bind(R.id.picture) ImageView mImageView;
@@ -51,6 +51,7 @@ public class PictureActivity extends ToolbarActivity {
     PhotoViewAttacher mPhotoViewAttacher;
     String mImageUrl, mImageTitle;
 
+    private Meizhi mMeizhi;
 
     @Override protected int provideContentViewId() {
         return R.layout.activity_picture;
@@ -63,8 +64,9 @@ public class PictureActivity extends ToolbarActivity {
 
 
     private void parseIntent() {
-        mImageUrl = getIntent().getStringExtra(EXTRA_IMAGE_URL);
-        mImageTitle = getIntent().getStringExtra(EXTRA_IMAGE_TITLE);
+        mMeizhi = (Meizhi) getIntent().getSerializableExtra(EXTRA_MEIZI);
+        mImageUrl = mMeizhi.url;
+        mImageTitle = mMeizhi.desc;
     }
 
 
@@ -119,7 +121,6 @@ public class PictureActivity extends ToolbarActivity {
 
     @Override public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_picture, menu);
-        // TODO: 把图片的一些信息，比如 who，加载到 Overflow 当中
         return true;
     }
 
@@ -136,9 +137,17 @@ public class PictureActivity extends ToolbarActivity {
             case R.id.action_save:
                 saveImageToGallery();
                 return true;
+            case R.id.action_about_meizi:
+                showAboutMeiziInfo();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showAboutMeiziInfo() {
+        if(mMeizhi==null)return;
+        ToastUtils.showLong("妹纸是"+mMeizhi.who);
     }
 
 
