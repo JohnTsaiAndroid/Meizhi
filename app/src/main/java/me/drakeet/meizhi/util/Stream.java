@@ -19,21 +19,25 @@
 
 package me.drakeet.meizhi.util;
 
-import android.os.AsyncTask;
-import android.os.Build;
+import rx.Observable;
 
 /**
- * Created by drak11t on 8/16/14.
+ * Created by drakeet(http://drakeet.me)
+ * Date: 15/11/11 12:00
  */
-public class TaskUtils {
-
-    @SafeVarargs public static <Params, Progress, Result> void executeAsyncTask(
-            AsyncTask<Params, Progress, Result> task, Params... params) {
-        if (Build.VERSION.SDK_INT >= 11) {
-            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, params);
-        }
-        else {
-            task.execute(params);
-        }
+public class Stream<T> extends Observable<T> {
+    /**
+     * Creates an Observable with a Function to execute when it is subscribed to.
+     * <p>
+     * <em>Note:</em> Use {@link #create(OnSubscribe)} to create an Observable, instead
+     * of
+     * this constructor,
+     * unless you specifically have a need for inheritance.
+     *
+     * @param f {@link OnSubscribe} to be executed when {@link #subscribe(Subscriber)} is
+     * called
+     */
+    protected Stream(OnSubscribe<T> f) {
+        super(f);
     }
 }

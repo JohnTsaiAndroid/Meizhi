@@ -126,14 +126,15 @@ public class LoveVideoView extends WebView {
     }
 
 
-    private class Chrome extends WebChromeClient implements MediaPlayer.OnCompletionListener {
+    private class Chrome extends WebChromeClient
+            implements MediaPlayer.OnCompletionListener {
 
-        @Override public void onCompletion(MediaPlayer mp) {
-            if (mp != null) {
-                if (mp.isPlaying()) mp.stop();
-                mp.reset();
-                mp.release();
-                mp = null;
+        @Override public void onCompletion(MediaPlayer player) {
+            if (player != null) {
+                if (player.isPlaying()) player.stop();
+                player.reset();
+                player.release();
+                player = null;
             }
         }
     }

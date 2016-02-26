@@ -47,15 +47,14 @@ import me.drakeet.meizhi.util.ToastUtils;
 
 public class WebActivity extends ToolbarActivity {
 
-    public static final String EXTRA_URL = "extra_url";
-    public static final String EXTRA_TITLE = "extra_title";
+    private static final String EXTRA_URL = "extra_url";
+    private static final String EXTRA_TITLE = "extra_title";
 
     @Bind(R.id.progressbar) NumberProgressBar mProgressbar;
     @Bind(R.id.webView) WebView mWebView;
     @Bind(R.id.tv_title) TextSwitcher mTextSwitcher;
 
-    Context mContext;
-    String mUrl, mTitle;
+    private String mUrl, mTitle;
 
 
     @Override protected int provideContentViewId() {
@@ -68,10 +67,24 @@ public class WebActivity extends ToolbarActivity {
     }
 
 
+    /**
+     * Using newIntent trick, return WebActivity Intent, to avoid `public static`
+     * constant
+     * variable everywhere
+     *
+     * @return Intent to start WebActivity
+     */
+    public static Intent newIntent(Context context, String extraURL, String extraTitle) {
+        Intent intent = new Intent(context, WebActivity.class);
+        intent.putExtra(EXTRA_URL, extraURL);
+        intent.putExtra(EXTRA_TITLE, extraTitle);
+        return intent;
+    }
+
+
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ButterKnife.bind(this);
-        mContext = this;
         mUrl = getIntent().getStringExtra(EXTRA_URL);
         mTitle = getIntent().getStringExtra(EXTRA_TITLE);
 
@@ -141,7 +154,7 @@ public class WebActivity extends ToolbarActivity {
                 refresh();
                 return true;
             case R.id.action_copy_url:
-                String copyDone = getString(R.string.toast_copy_done);
+                String copyDone = getString(R.string.tip_copy_done);
                 AndroidUtils.copyToClipBoard(this, mWebView.getUrl(), copyDone);
                 return true;
             case R.id.action_open_url:
@@ -153,7 +166,7 @@ public class WebActivity extends ToolbarActivity {
                     startActivity(intent);
                 }
                 else {
-                    ToastUtils.showLong(R.string.toast_open_fail);
+                    ToastUtils.showLong(R.string.tip_open_fail);
                 }
                 return true;
         }
@@ -187,8 +200,12 @@ public class WebActivity extends ToolbarActivity {
         @Override public void onProgressChanged(WebView view, int newProgress) {
             super.onProgressChanged(view, newProgress);
             mProgressbar.setProgress(newProgress);
-            if (newProgress == 100) { mProgressbar.setVisibility(View.GONE); }
-            else { mProgressbar.setVisibility(View.VISIBLE); }
+            if (newProgress == 100) {
+                mProgressbar.setVisibility(View.GONE);
+            }
+            else {
+                mProgressbar.setVisibility(View.VISIBLE);
+            }
         }
 
 

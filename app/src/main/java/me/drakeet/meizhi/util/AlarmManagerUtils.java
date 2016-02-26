@@ -23,10 +23,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-
 import java.util.Calendar;
-import java.util.Date;
-
 import me.drakeet.meizhi.service.AlarmReceiver;
 
 /**
@@ -35,20 +32,24 @@ import me.drakeet.meizhi.service.AlarmReceiver;
 public class AlarmManagerUtils {
 
     public static void register(Context context) {
+        Calendar today = Calendar.getInstance();
+        Calendar now = Calendar.getInstance();
 
-        Calendar tomorrow = Calendar.getInstance();
-        tomorrow.setTime(DateUtils.getNextdayDate(new Date()));
+        today.set(Calendar.HOUR_OF_DAY, 12);
+        today.set(Calendar.MINUTE, 24);
+        today.set(Calendar.SECOND, 38);
 
-        tomorrow.set(Calendar.HOUR_OF_DAY, 12);
-        tomorrow.set(Calendar.MINUTE, 38);
-        tomorrow.set(Calendar.SECOND, 0);
+        if (now.after(today)) {
+            return;
+        }
 
         Intent intent = new Intent("me.drakeet.meizhi.alarm");
         intent.setClass(context, AlarmReceiver.class);
 
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
-        AlarmManager am = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
+        PendingIntent broadcast = PendingIntent.getBroadcast(context, 520, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        am.set(AlarmManager.RTC_WAKEUP, tomorrow.getTimeInMillis(), pi);
+        manager.set(AlarmManager.RTC_WAKEUP, today.getTimeInMillis(), broadcast);
     }
 }

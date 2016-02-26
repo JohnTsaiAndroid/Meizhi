@@ -27,13 +27,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.List;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import java.util.List;
-
 import me.drakeet.meizhi.R;
-import me.drakeet.meizhi.model.Gank;
+import me.drakeet.meizhi.data.entity.Gank;
 import me.drakeet.meizhi.ui.WebActivity;
 import me.drakeet.meizhi.util.StringStyleUtils;
 
@@ -51,8 +51,8 @@ public class GankListAdapter extends AnimRecyclerViewAdapter<GankListAdapter.Vie
 
 
     @Override public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v =
-                LayoutInflater.from(parent.getContext()).inflate(R.layout.item_gank, parent, false);
+        View v = LayoutInflater.from(parent.getContext())
+                               .inflate(R.layout.item_gank, parent, false);
         return new ViewHolder(v);
     }
 
@@ -63,24 +63,23 @@ public class GankListAdapter extends AnimRecyclerViewAdapter<GankListAdapter.Vie
             showCategory(holder);
         }
         else {
-            // 上一个与这一个的目录是否一样
-            boolean doesLastAndThis =
-                    mGankList.get(position - 1).type.equals(mGankList.get(position).type);
-            if (!doesLastAndThis) {
+            boolean theCategoryOfLastEqualsToThis = mGankList.get(
+                    position - 1).type.equals(mGankList.get(position).type);
+            if (!theCategoryOfLastEqualsToThis) {
                 showCategory(holder);
             }
-            else if (holder.category.isShown()) holder.category.setVisibility(View.GONE);
+            else {
+                hideCategory(holder);
+            }
         }
         holder.category.setText(gank.type);
-        if (holder.gank.getTag() == null) {
-            SpannableStringBuilder builder = new SpannableStringBuilder(gank.desc).append(
-                    StringStyleUtils.format(holder.gank.getContext(), " (via. " + gank.who + ")",
-                            R.style.ViaTextAppearance));
-            CharSequence gankText = builder.subSequence(0, builder.length());
-            holder.gank.setTag(gankText);
-        }
-        CharSequence text = (CharSequence) holder.gank.getTag();
-        holder.gank.setText(text);
+        SpannableStringBuilder builder = new SpannableStringBuilder(gank.desc).append(
+                StringStyleUtils.format(holder.gank.getContext(), " (via. " +
+                        gank.who +
+                        ")", R.style.ViaTextAppearance));
+        CharSequence gankText = builder.subSequence(0, builder.length());
+
+        holder.gank.setText(gankText);
         showItemAnim(holder.gank, position);
     }
 
@@ -91,7 +90,20 @@ public class GankListAdapter extends AnimRecyclerViewAdapter<GankListAdapter.Vie
 
 
     private void showCategory(ViewHolder holder) {
-        if (!holder.category.isShown()) holder.category.setVisibility(View.VISIBLE);
+        if (!isVisibleOf(holder.category)) holder.category.setVisibility(View.VISIBLE);
+    }
+
+
+    private void hideCategory(ViewHolder holder) {
+        if (isVisibleOf(holder.category)) holder.category.setVisibility(View.GONE);
+    }
+
+
+    /**
+     * view.isShown() is a kidding...
+     */
+    private boolean isVisibleOf(View view) {
+        return view.getVisibility() == View.VISIBLE;
     }
 
 
@@ -109,9 +121,7 @@ public class GankListAdapter extends AnimRecyclerViewAdapter<GankListAdapter.Vie
 
         @OnClick(R.id.ll_gank_parent) void onGank(View v) {
             Gank gank = mGankList.get(getLayoutPosition());
-            Intent intent = new Intent(v.getContext(), WebActivity.class);
-            intent.putExtra(WebActivity.EXTRA_TITLE, gank.desc);
-            intent.putExtra(WebActivity.EXTRA_URL, gank.url);
+            Intent intent = WebActivity.newIntent(v.getContext(), gank.url, gank.desc);
             v.getContext().startActivity(intent);
         }
     }

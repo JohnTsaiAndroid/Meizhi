@@ -20,9 +20,10 @@
 package me.drakeet.meizhi.data;
 
 import java.util.List;
-import me.drakeet.meizhi.model.Gank;
+import me.drakeet.meizhi.data.entity.Gank;
 
 /**
+ * 中文名是故意的，请勿吐槽[笑哭]
  * Created by drakeet on 8/15/15.
  */
 public class 休息视频Data extends BaseData {

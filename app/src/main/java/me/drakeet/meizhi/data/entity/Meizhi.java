@@ -17,16 +17,25 @@
  * along with Meizhi.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.drakeet.meizhi.event;
+package me.drakeet.meizhi.data.entity;
 
-import android.view.View;
-
-import me.drakeet.meizhi.model.Meizhi;
+import com.litesuits.orm.db.annotation.Column;
+import com.litesuits.orm.db.annotation.Table;
+import java.util.Date;
 
 /**
- * 邪恶的 class 名。。。。
- * Created by drakeet on 7/1/15.
+ * Created by drakeet on 6/20/15.
  */
-public interface OnMeizhiTouchListener {
-    void onTouch(View v, View meizhiView, View card, Meizhi meizhi);
+@Table("meizhis") public class Meizhi extends Soul {
+
+    @Column("url") public String url;
+    @Column("type") public String type;
+    @Column("desc") public String desc;
+    @Column("who") public String who;
+    @Column("used") public boolean used;
+    @Column("createdAt") public Date createdAt;
+    @Column("updatedAt") public Date updatedAt;
+    @Column("publishedAt") public Date publishedAt;
+    @Column("imageWidth") public int imageWidth;
+    @Column("imageHeight") public int imageHeight;
 }

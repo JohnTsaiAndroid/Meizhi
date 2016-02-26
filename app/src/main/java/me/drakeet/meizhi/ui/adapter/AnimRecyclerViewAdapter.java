@@ -53,7 +53,8 @@ public class AnimRecyclerViewAdapter<T extends RecyclerView.ViewHolder>
         if (position > mLastPosition) {
             view.setAlpha(0);
             view.postDelayed(() -> {
-                Animation animation = AnimationUtils.loadAnimation(context, R.anim.slide_in_right);
+                Animation animation = AnimationUtils.loadAnimation(context,
+                        R.anim.slide_in_right);
                 animation.setAnimationListener(new Animation.AnimationListener() {
                     @Override public void onAnimationStart(Animation animation) {
                         view.setAlpha(1);

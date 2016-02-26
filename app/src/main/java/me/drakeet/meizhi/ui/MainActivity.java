@@ -44,14 +44,19 @@ import java.util.Date;
 import java.util.List;
 import me.drakeet.meizhi.App;
 import me.drakeet.meizhi.R;
-import me.drakeet.meizhi.ui.adapter.MeizhiListAdapter;
 import me.drakeet.meizhi.data.MeizhiData;
 import me.drakeet.meizhi.data.休息视频Data;
-import me.drakeet.meizhi.event.OnMeizhiTouchListener;
-import me.drakeet.meizhi.model.Meizhi;
+import me.drakeet.meizhi.func.OnMeizhiTouchListener;
+import me.drakeet.meizhi.data.entity.Gank;
+import me.drakeet.meizhi.data.entity.Meizhi;
+import me.drakeet.meizhi.ui.adapter.MeizhiListAdapter;
 import me.drakeet.meizhi.ui.base.SwipeRefreshBaseActivity;
 import me.drakeet.meizhi.util.AlarmManagerUtils;
+import me.drakeet.meizhi.util.DateUtils;
 import me.drakeet.meizhi.util.Once;
+import me.drakeet.meizhi.util.PreferencesLoader;
+import me.drakeet.meizhi.util.Stream;
+import me.drakeet.meizhi.util.ToastUtils;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -62,10 +67,11 @@ public class MainActivity extends SwipeRefreshBaseActivity {
 
     @Bind(R.id.rv_meizhi) RecyclerView mRecyclerView;
 
-    MeizhiListAdapter mMeizhiListAdapter;
-    List<Meizhi> mMeizhiList;
-    boolean mIsFirstTimeTouchBottom = true;
-    int mPage = 1;
+    private MeizhiListAdapter mMeizhiListAdapter;
+    private List<Meizhi> mMeizhiList;
+    private boolean mIsFirstTimeTouchBottom = true;
+    private int mPage = 1;
+    private boolean mMeizhiBeTouched;
 
 
     @Override protected int provideContentViewId() {
@@ -78,126 +84,138 @@ public class MainActivity extends SwipeRefreshBaseActivity {
         ButterKnife.bind(this);
         mMeizhiList = new ArrayList<>();
         QueryBuilder query = new QueryBuilder(Meizhi.class);
-        query.limit(1, 10);
+        query.appendOrderDescBy("publishedAt");
+        query.limit(0, 10);
         mMeizhiList.addAll(App.sDb.query(query));
 
-        setUpRecyclerView();
-        setUpUmeng();
+        setupRecyclerView();
+        setupUmeng();
         AlarmManagerUtils.register(this);
     }
 
 
     @Override protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        new Handler().postDelayed(() -> setRefreshing(true), 358);
-        getData(true);
+        new Handler().postDelayed(() -> setRequestDataRefresh(true), 358);
+        loadData(true);
     }
 
 
-    private void setUpUmeng() {
-        MobclickAgent.updateOnlineConfig(this);
-        // MobclickAgent.setDebugMode(true);
+    private void setupUmeng() {
         UmengUpdateAgent.update(this);
         UmengUpdateAgent.setDeltaUpdate(false);
         UmengUpdateAgent.setUpdateOnlyWifi(false);
     }
 
 
-    private void setUpRecyclerView() {
-        final StaggeredGridLayoutManager layoutManager =
-                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+    private void setupRecyclerView() {
+        final StaggeredGridLayoutManager layoutManager
+                = new StaggeredGridLayoutManager(2,
+                StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(layoutManager);
         mMeizhiListAdapter = new MeizhiListAdapter(this, mMeizhiList);
         mRecyclerView.setAdapter(mMeizhiListAdapter);
         new Once(this).show("tip_guide_6", () -> {
-            Snackbar.make(mRecyclerView, getString(R.string.tip_guide), Snackbar.LENGTH_INDEFINITE)
-                    .setAction(R.string.i_know, v -> {})
+            Snackbar.make(mRecyclerView, getString(R.string.tip_guide),
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.i_know, v -> {
+                    })
                     .show();
         });
 
-        mRecyclerView.addOnScrollListener(getScrollToBottomListener(layoutManager));
+        mRecyclerView.addOnScrollListener(getOnBottomListener(layoutManager));
         mMeizhiListAdapter.setOnMeizhiTouchListener(getOnMeizhiTouchListener());
     }
 
 
-    private void getData(boolean clean) {
-        Subscription s = Observable.zip(sDrakeet.getMeizhiData(mPage), sDrakeet.get休息视频Data(mPage),
-                this::createMeizhiDataWith休息视频Desc)
-                .map(meizhiData -> meizhiData.results)
-                .flatMap(Observable::from)
-                .toSortedList(
-                        (meizhi1, meizhi2) -> meizhi2.publishedAt.compareTo(meizhi1.publishedAt))
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(meizhis -> {
-                    if (clean) mMeizhiList.clear();
-                    saveMeizhis(meizhis);
-                    mMeizhiList.addAll(meizhis);
-                    mMeizhiListAdapter.notifyDataSetChanged();
-                    setRefreshing(false);
-                }, throwable -> loadError(throwable));
+    /**
+     * 获取服务数据
+     *
+     * @param clean 清除来自数据库缓存或者已有数据。
+     */
+    private void loadData(boolean clean) {
+        mLastVideoIndex = 0;
+        // @formatter:off
+        Subscription s = Observable
+               .zip(sGankIO.getMeizhiData(mPage),
+                     sGankIO.get休息视频Data(mPage),
+                     this::createMeizhiDataWith休息视频Desc)
+               .map(meizhiData -> meizhiData.results)
+               .flatMap(Observable::from)
+               .toSortedList((meizhi1, meizhi2) ->
+                     meizhi2.publishedAt.compareTo(meizhi1.publishedAt))
+               .doOnNext(this::saveMeizhis)
+               .observeOn(AndroidSchedulers.mainThread())
+               .subscribe(meizhis -> {
+                   if (clean) mMeizhiList.clear();
+                   mMeizhiList.addAll(meizhis);
+                   mMeizhiListAdapter.notifyDataSetChanged();
+                   setRequestDataRefresh(false);
+               }, throwable -> loadError(throwable));
+        // @formatter:on
         addSubscription(s);
     }
 
 
     private void loadError(Throwable throwable) {
         throwable.printStackTrace();
-        setRefreshing(false);
-        Snackbar.make(mRecyclerView, R.string.snap_load_fail, Snackbar.LENGTH_LONG)
-                .setAction(R.string.retry, v -> {requestDataRefresh();})
-                .show();
+        setRequestDataRefresh(false);
+        Snackbar.make(mRecyclerView, R.string.snap_load_fail,
+                Snackbar.LENGTH_LONG).setAction(R.string.retry, v -> {
+            requestDataRefresh();
+        }).show();
     }
 
 
     private void saveMeizhis(List<Meizhi> meizhis) {
-        App.sDb.insert(meizhis, ConflictAlgorithm.Ignore);
+        App.sDb.insert(meizhis, ConflictAlgorithm.Replace);
     }
 
 
-    private MeizhiData createMeizhiDataWith休息视频Desc(MeizhiData mzData, 休息视频Data love) {
-        for (int i = 0; i < mzData.results.size(); i++) {
-            Meizhi m = mzData.results.get(i);
-            m.desc = m.desc + " " + love.results.get(i).desc;
-        }
-        return mzData;
+    private MeizhiData createMeizhiDataWith休息视频Desc(MeizhiData data, 休息视频Data love) {
+        Stream.from(data.results)
+              .forEach(meizhi -> meizhi.desc = meizhi.desc + " " +
+                      getFirstVideoDesc(meizhi.publishedAt, love.results));
+        return data;
     }
 
 
-    private void getData() {
-        getData(/* clean */false);
-    }
+    private int mLastVideoIndex = 0;
 
 
-    RecyclerView.OnScrollListener getScrollToBottomListener(
-            StaggeredGridLayoutManager layoutManager) {
-        return new RecyclerView.OnScrollListener() {
-            @Override public void onScrolled(RecyclerView rv, int dx, int dy) {
-                boolean isBottom =
-                        layoutManager.findLastCompletelyVisibleItemPositions(new int[2])[1]
-                                >= mMeizhiListAdapter.getItemCount() - PRELOAD_SIZE;
-                if (!mSwipeRefreshLayout.isRefreshing() && isBottom) {
-                    if (!mIsFirstTimeTouchBottom) {
-                        mSwipeRefreshLayout.setRefreshing(true);
-                        mPage += 1;
-                        getData();
-                    }
-                    else {
-                        mIsFirstTimeTouchBottom = false;
-                    }
-                }
+    private String getFirstVideoDesc(Date publishedAt, List<Gank> results) {
+        String videoDesc = "";
+        for (int i = mLastVideoIndex; i < results.size(); i++) {
+            Gank video = results.get(i);
+            if (DateUtils.isTheSameDay(publishedAt, video.publishedAt)) {
+                videoDesc = video.desc;
+                mLastVideoIndex = i;
+                break;
             }
-        };
+        }
+        return videoDesc;
+    }
+
+
+    private void loadData() {
+        loadData(/* clean */false);
     }
 
 
     private OnMeizhiTouchListener getOnMeizhiTouchListener() {
         return (v, meizhiView, card, meizhi) -> {
             if (meizhi == null) return;
-            if (v == meizhiView) {
+            if (v == meizhiView && !mMeizhiBeTouched) {
+                mMeizhiBeTouched = true;
                 Picasso.with(this).load(meizhi.url).fetch(new Callback() {
-                    @Override public void onSuccess() {startPictureActivity(meizhi, meizhiView);}
+
+                    @Override public void onSuccess() {
+                        mMeizhiBeTouched = false;
+                        startPictureActivity(meizhi, meizhiView);
+                    }
 
 
-                    @Override public void onError() {}
+                    @Override public void onError() {mMeizhiBeTouched = false;}
                 });
             }
             else if (v == card) {
@@ -215,22 +233,23 @@ public class MainActivity extends SwipeRefreshBaseActivity {
 
 
     private void startPictureActivity(Meizhi meizhi, View transitView) {
-        Intent i = new Intent(MainActivity.this, PictureActivity.class);
-        i.putExtra(PictureActivity.EXTRA_MEIZI,meizhi);
-
-        ActivityOptionsCompat optionsCompat =
-                ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, transitView,
-                        PictureActivity.TRANSIT_PIC);
+        Intent intent = PictureActivity.newIntent(MainActivity.this, meizhi.url,
+                meizhi.desc);
+        ActivityOptionsCompat optionsCompat
+                = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                MainActivity.this, transitView, PictureActivity.TRANSIT_PIC);
         try {
-            ActivityCompat.startActivity(MainActivity.this, i, optionsCompat.toBundle());
+            ActivityCompat.startActivity(MainActivity.this, intent,
+                    optionsCompat.toBundle());
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            startActivity(i);
+            startActivity(intent);
         }
     }
 
 
-    @Override public void onToolbarClick() {mRecyclerView.smoothScrollToPosition(0);}
+    @Override
+    public void onToolbarClick() {mRecyclerView.smoothScrollToPosition(0);}
 
 
     @OnClick(R.id.main_fab) public void onFab(View v) {
@@ -242,26 +261,30 @@ public class MainActivity extends SwipeRefreshBaseActivity {
 
     @Override public void requestDataRefresh() {
         super.requestDataRefresh();
-        //mMeizhiList.clear();
-        //mPage = 1;
-        //getData(/* add from db */ false);
-        setRefreshing(false);
+        mPage = 1;
+        loadData(true);
     }
 
 
     private void openGitHubTrending() {
         String url = getString(R.string.url_github_trending);
         String title = getString(R.string.action_github_trending);
-        Intent intent = new Intent(this, WebActivity.class);
-        intent.putExtra(WebActivity.EXTRA_URL, url);
-        intent.putExtra(WebActivity.EXTRA_TITLE, title);
+        Intent intent = WebActivity.newIntent(this, url, title);
         startActivity(intent);
     }
 
 
     @Override public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem item = menu.findItem(R.id.action_notifiable);
+        initNotifiableItemState(item);
         return true;
+    }
+
+
+    private void initNotifiableItemState(MenuItem item) {
+        PreferencesLoader loader = new PreferencesLoader(this);
+        item.setChecked(loader.getBoolean(R.string.action_notifiable, true));
     }
 
 
@@ -271,8 +294,40 @@ public class MainActivity extends SwipeRefreshBaseActivity {
             case R.id.action_trending:
                 openGitHubTrending();
                 return true;
+            case R.id.action_notifiable:
+                boolean isChecked = !item.isChecked();
+                item.setChecked(isChecked);
+                PreferencesLoader loader = new PreferencesLoader(this);
+                loader.saveBoolean(R.string.action_notifiable, isChecked);
+                ToastUtils.showShort(isChecked
+                                     ? R.string.notifiable_on
+                                     : R.string.notifiable_off);
+                return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    RecyclerView.OnScrollListener getOnBottomListener(StaggeredGridLayoutManager layoutManager) {
+        return new RecyclerView.OnScrollListener() {
+            @Override public void onScrolled(RecyclerView rv, int dx, int dy) {
+                boolean isBottom =
+                        layoutManager.findLastCompletelyVisibleItemPositions(
+                                new int[2])[1] >=
+                                mMeizhiListAdapter.getItemCount() -
+                                        PRELOAD_SIZE;
+                if (!mSwipeRefreshLayout.isRefreshing() && isBottom) {
+                    if (!mIsFirstTimeTouchBottom) {
+                        mSwipeRefreshLayout.setRefreshing(true);
+                        mPage += 1;
+                        loadData();
+                    }
+                    else {
+                        mIsFirstTimeTouchBottom = false;
+                    }
+                }
+            }
+        };
     }
 
 

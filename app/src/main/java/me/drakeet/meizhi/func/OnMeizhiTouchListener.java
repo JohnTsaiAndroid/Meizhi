@@ -17,18 +17,15 @@
  * along with Meizhi.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.drakeet.meizhi.model;
+package me.drakeet.meizhi.func;
 
-import com.google.gson.annotations.Expose;
+import android.view.View;
+
+import me.drakeet.meizhi.data.entity.Meizhi;
 
 /**
- * Created by drakeet(http://drakeet.me)
- * Date: 9/9/15 11:00
+ * Created by drakeet on 7/1/15.
  */
-public class DGank {
-    @Expose public String preview;
-    @Expose public String tag;
-    @Expose public String createdAt;
-    @Expose public String updatedAt;
-    @Expose public String objectId;
+public interface OnMeizhiTouchListener {
+    void onTouch(View v, View meizhiView, View card, Meizhi meizhi);
 }

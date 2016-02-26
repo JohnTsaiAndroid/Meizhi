@@ -17,25 +17,24 @@
  * along with Meizhi.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.drakeet.meizhi.model;
+package me.drakeet.meizhi;
 
-import com.litesuits.orm.db.annotation.Column;
-import com.litesuits.orm.db.annotation.Table;
-import java.util.Date;
+import me.drakeet.meizhi.data.DGankData;
+import retrofit.http.GET;
+import retrofit.http.Headers;
+import retrofit.http.Query;
+import rx.Observable;
+
+// @formatter:off
 
 /**
- * Created by drakeet on 6/20/15.
+ * Created by drakeet on 8/9/15.
  */
-@Table("meizhis") public class Meizhi extends Soul {
+public interface DrakeetApi {
 
-    @Column("url") public String url;
-    @Column("type") public String type;
-    @Column("desc") public String desc;
-    @Column("who") public String who;
-    @Column("used") public boolean used;
-    @Column("createdAt") public Date createdAt;
-    @Column("updatedAt") public Date updatedAt;
-    @Column("publishedAt") public Date publishedAt;
-    @Column("imageWidth") public int imageWidth;
-    @Column("imageHeight") public int imageHeight;
+    @Headers({ "X-LC-Id: 0azfScvBLCC9tAGRAwIhcC40",
+               "X-LC-Key: gAuE93qAusvP8gk1VW8DtOUb",
+               "Content-Type: application/json" })
+    @GET("/Gank?limit=1") Observable<DGankData> getDGankData(
+            @Query("where") String where);// format {"tag":"2015-11-10"}
 }

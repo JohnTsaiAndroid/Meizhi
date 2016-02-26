@@ -38,8 +38,7 @@ import rx.schedulers.Schedulers;
  */
 public class RxMeizhi {
 
-    public static Observable<Uri> saveImageAndGetPathObservable(Context context, String url,
-            String title) {
+    public static Observable<Uri> saveImageAndGetPathObservable(Context context, String url, String title) {
         return Observable.create(new Observable.OnSubscribe<Bitmap>() {
             @Override public void call(Subscriber<? super Bitmap> subscriber) {
                 Bitmap bitmap = null;

@@ -44,7 +44,7 @@ public class ActiveAndroidStrategy implements ExclusionStrategy {
 
 
     @Override public boolean shouldSkipClass(Class<?> clazz) {
-        return clazz != null && (clazz.equals(excludedThisClass) || shouldSkipClass(
-                clazz.getSuperclass()));
+        return clazz != null && (clazz.equals(excludedThisClass) ||
+                shouldSkipClass(clazz.getSuperclass()));
     }
 }

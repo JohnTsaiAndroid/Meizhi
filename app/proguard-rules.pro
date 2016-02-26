@@ -50,7 +50,6 @@
 		public static final int *;
 }
 
--keep public class com.umeng.fb.ui.ThreadView {}
 
 -keep class me.drakeet.meizhi.BuildConfig { *; }
 -keep public class * extends android.os.Binder
@@ -94,12 +93,6 @@
 
 -keep class android.support.v8.renderscript.** { *; }
 
-# ActiveAndroid
--keep class com.activeandroid.** { *; }
--keep class com.activeandroid.**.** { *; }
--keep class * extends com.activeandroid.Model
--keep class * extends com.activeandroid.serializer.TypeSerializer
-
 
 # Remove logging calls
 -assumenosideeffects class android.util.Log {
@@ -125,6 +118,7 @@
 -keepattributes Signature
 -keepattributes *Annotation*
 -keep class com.squareup.okhttp.** { *; }
+-dontwarn okio.**
 -keep interface com.squareup.okhttp.** { *; }
 -dontwarn com.squareup.okhttp.**
 
@@ -149,4 +143,31 @@
 -keepclassmembers enum * {
     **[] $VALUES;
     public *;
+}
+
+-keep class me.henrytao.smoothappbarlayout.** { *; }
+
+# umeng
+-keepclassmembers class * {
+   public <init>(org.json.JSONObject);
+}
+
+-keep public class me.drakeet.meizhi.R$*{
+    public static final int *;
+}
+
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+-keep class com.umeng.** { *; }
+-keep public class * extends com.umeng.**
+
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int d(...);
+    public static int w(...);
+    public static int v(...);
+    public static int i(...);
 }

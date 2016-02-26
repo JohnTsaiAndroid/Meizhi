@@ -33,15 +33,16 @@ import com.squareup.picasso.Picasso;
 import java.io.IOException;
 import java.util.List;
 import me.drakeet.meizhi.R;
-import me.drakeet.meizhi.event.OnMeizhiTouchListener;
-import me.drakeet.meizhi.model.Meizhi;
+import me.drakeet.meizhi.func.OnMeizhiTouchListener;
+import me.drakeet.meizhi.data.entity.Meizhi;
 import me.drakeet.meizhi.widget.RatioImageView;
 import rx.Observable;
 
 /**
  * Created by drakeet on 6/20/15.
  */
-public class MeizhiListAdapter extends RecyclerView.Adapter<MeizhiListAdapter.ViewHolder> {
+public class MeizhiListAdapter
+        extends RecyclerView.Adapter<MeizhiListAdapter.ViewHolder> {
 
     public static final String TAG = "MeizhiListAdapter";
 
@@ -58,27 +59,30 @@ public class MeizhiListAdapter extends RecyclerView.Adapter<MeizhiListAdapter.Vi
 
     @Override public ViewHolder onCreateViewHolder(ViewGroup parent, int i) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_meizhi, parent, false);
+                               .inflate(R.layout.item_meizhi, parent, false);
         return new ViewHolder(v);
     }
 
 
-    @Override public void onBindViewHolder(final ViewHolder viewHolder, final int position) {
+    @Override
+    public void onBindViewHolder(final ViewHolder viewHolder, final int position) {
         Meizhi meizhi = mList.get(position);
         int limit = 48;
-        String text = meizhi.desc.length() > limit ? meizhi.desc.substring(0, limit) + "..."
-                : meizhi.desc;
+        String text = meizhi.desc.length() > limit ? meizhi.desc.substring(0, limit) +
+                "..." : meizhi.desc;
         viewHolder.meizhi = meizhi;
         viewHolder.titleView.setText(text);
         viewHolder.card.setTag(meizhi.desc);
 
         Glide.with(mContext)
-                .load(meizhi.url)
-                .centerCrop()
-                .into(viewHolder.meizhiView)
-                .getSize((width, height) -> {
-                    if (!viewHolder.card.isShown()) viewHolder.card.setVisibility(View.VISIBLE);
-                });
+             .load(meizhi.url)
+             .centerCrop()
+             .into(viewHolder.meizhiView)
+             .getSize((width, height) -> {
+                 if (!viewHolder.card.isShown()) {
+                     viewHolder.card.setVisibility(View.VISIBLE);
+                 }
+             });
     }
 
 

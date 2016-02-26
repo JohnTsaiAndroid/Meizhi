@@ -39,7 +39,8 @@ import me.drakeet.meizhi.event.OnKeyBackClickEvent;
 import me.drakeet.meizhi.ui.base.ToolbarActivity;
 import me.drakeet.meizhi.util.DateUtils;
 
-public class GankActivity extends ToolbarActivity implements ViewPager.OnPageChangeListener {
+public class GankActivity extends ToolbarActivity
+        implements ViewPager.OnPageChangeListener {
 
     public static final String EXTRA_GANK_DATE = "gank_date";
 
@@ -65,7 +66,6 @@ public class GankActivity extends ToolbarActivity implements ViewPager.OnPageCha
         ButterKnife.bind(this);
         mGankDate = (Date) getIntent().getSerializableExtra(EXTRA_GANK_DATE);
         setTitle(DateUtils.toDate(mGankDate));
-
         initViewPager();
         initTabLayout();
     }
@@ -89,17 +89,21 @@ public class GankActivity extends ToolbarActivity implements ViewPager.OnPageCha
 
     @Override public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) { hideOrShowToolbar(); }
-        else { hideOrShowToolbar(); }
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            hideOrShowToolbar();
+        }
+        else {
+            hideOrShowToolbar();
+        }
     }
 
 
     @Override protected void hideOrShowToolbar() {
         View toolbar = findViewById(R.id.toolbar_with_indicator);
         toolbar.animate()
-                .translationY(mIsHidden ? 0 : -mToolbar.getHeight())
-                .setInterpolator(new DecelerateInterpolator(2))
-                .start();
+               .translationY(mIsHidden ? 0 : -mToolbar.getHeight())
+               .setInterpolator(new DecelerateInterpolator(2))
+               .start();
         mIsHidden = !mIsHidden;
         if (mIsHidden) {
             mViewPager.setTag(mViewPager.getPaddingTop());
@@ -115,8 +119,8 @@ public class GankActivity extends ToolbarActivity implements ViewPager.OnPageCha
     @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_BACK:
-                if (getResources().getConfiguration().orientation
-                        == Configuration.ORIENTATION_LANDSCAPE) {
+                if (getResources().getConfiguration().orientation ==
+                        Configuration.ORIENTATION_LANDSCAPE) {
                     LoveBus.getLovelySeat().post(new OnKeyBackClickEvent());
                     return true;
                 }

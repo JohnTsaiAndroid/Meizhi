@@ -17,20 +17,22 @@
  * along with Meizhi.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.drakeet.meizhi.model;
+package me.drakeet.meizhi.service;
 
-import com.litesuits.orm.db.annotation.Column;
-import com.litesuits.orm.db.annotation.NotNull;
-import com.litesuits.orm.db.annotation.PrimaryKey;
-import com.litesuits.orm.db.annotation.Unique;
-import java.io.Serializable;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import me.drakeet.meizhi.util.AlarmManagerUtils;
 
 /**
  * Created by drakeet(http://drakeet.me)
- * Date: 8/18/15 13:55
+ * Date: 15/10/10 10:50
  */
-public class Soul implements Serializable {
+public class KeepAlarmLiveReceiver extends BroadcastReceiver {
 
-    @PrimaryKey(PrimaryKey.AssignType.AUTO_INCREMENT) @Column("_id") protected long id;
-    @NotNull @Unique @Column("objectId") public String objectId;
+    @Override public void onReceive(Context context, Intent intent) {
+        if (intent != null && Intent.ACTION_USER_PRESENT.equals(intent.getAction())) {
+            AlarmManagerUtils.register(context);
+        }
+    }
 }

@@ -23,7 +23,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-import me.drakeet.meizhi.model.Gank;
+import me.drakeet.meizhi.data.entity.Gank;
 
 /**
  * Created by drakeet on 8/11/15.
@@ -40,5 +40,6 @@ public class GankData extends BaseData {
         @SerializedName("福利") public List<Gank> 妹纸List;
         @SerializedName("拓展资源") public List<Gank> 拓展资源List;
         @SerializedName("瞎推荐") public List<Gank> 瞎推荐List;
+        @SerializedName("App") public List<Gank> appList;
     }
 }
